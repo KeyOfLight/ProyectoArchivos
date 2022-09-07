@@ -1,36 +1,46 @@
 #include "Comando.h"
+#include "Mkdisk.h"
+#include "Rmdisk.h"
+#include "Fdisk.h"
+#include "Mount.h"
+
 #include <vector>
 
 void Comando::identificacionCMD(Parametros p){
-    if(p.Comando=="mkdisk"){ // Se identifica el tipo de comando
-        if(p.Tamano != " " && p.Direccion != " "){ // Se validan los parametros para el comando
+    if(p.Comando=="mkdisk"){ 
+        if(p.Tamano != " " && p.Direccion != " "){ //
             crearArchivo(p.Tamano,p.Dimensional, p.FitType, p.Direccion);
         }else{
             cout << "Error creando Disco: Parametros obligatorios no definidos." << endl;
         }
-    }else if(p.Comando=="vertodo"){ // Se identifica el tipo de comando
+    }else if(p.Comando=="vertodo"){
         vertodo();
-    }else if(p.Comando=="execut"){ // Se identifica el tipo de comando
-        if(p.Direccion != " "){ // Se validan los parametros para el comando ------------------------TERMINAR EL COMANDO
+    }else if(p.Comando=="execut"){
+        if(p.Direccion != " "){ // ------------------------TERMINAR EL COMANDO
             
             exec(p.Direccion);
         }else{
             cout << "Error elimando x registro: Parametros obligatorios no definidos." << endl;
         }
-    }else if(p.Comando=="rmdisk"){ // Se identifica el tipo de comando
-        if(p.Direccion != " "){ // Se validan los parametros para el comando ------------------------TERMINAR EL COMANDO
-            
+    }else if(p.Comando=="rmdisk"){
+        if(p.Direccion != " "){ //------------------------TERMINAR EL COMANDO
             eliminarX(p.Direccion);
         }else{
             cout << "Error elimando x registro: Parametros obligatorios no definidos." << endl;
         }
-    }else if(p.Comando=="fdisk"){ // Se identifica el tipo de comando
+    }else if(p.Comando=="fdisk"){
         if(p.Tamano != " " && p.Direccion !=" " && p.Nombre != " "){ 
             fDisk(p.Tamano, p.Dimensional, p.Direccion, p.PartType, p.FitType, p.Delete, p.Add, p.Nombre);
         }else{
             cout << "Error creando la particion del disco duro" << endl;
         }
-    }                  
+    }else if(p.Comando=="mount"){ // Se identifica el tipo de comando
+        if(p.Direccion !=" " && p.Nombre != " "){ 
+            Mount(p.Direccion, p.Nombre);
+        }else{
+            cout << "Error creando la particion del disco duro" << endl;
+        }
+    }                      
 }
 
 void Comando::exec(string dir){
@@ -65,51 +75,11 @@ bool Comando::crearArchivo(string tam, string dim, string fittype ,string dir){
 
     size_file = tamao(tam, dim);
 
-    char bloque[1024];
-    for (int i = 0; i < 1024; i++)
-    {
-        bloque[i] = '\0';
-    }
-
-    int limite = 0;
-    FILE *archivo_binario;
-    std::string str;
-    
-    const char * carar = dir.c_str();
-
-    FILE *disk = fopen(carar, "rb");
-
-    if (!disk) {
-        return false;
-    }
-
-    fclose(disk);
-    return true;
+    Mkdisk mkdisk;
+    return mkdisk.crearDisco(size_file, dir);
 
 
 
-    archivo_binario = fopen(carar, "wb+");
-    while (limite != size_file)
-    {
-        fwrite(&bloque, 1024, 1, archivo_binario);
-        limite++;
-    }
-
-    fclose(archivo_binario);
-    archivo_binario = fopen(carar, "rb+");
-    MBR temp;
-
-    temp.mbr_dsk_signature = rand();
-    temp.FitType = fittype;
-    temp.mbr_tamano = size_file; 
-
-    fseek(archivo_binario, 1, SEEK_SET);
-    size_t elements_written = fwrite(&temp, sizeof(MBR), 1, archivo_binario);
-    if (elements_written ==0){
-        cout << "No se pudo escribir :c" << endl;
-    }
-
-    fclose(archivo_binario);
 }
 
 
@@ -140,25 +110,10 @@ void Comando::escribir(string id, string nombre, string tel, string dir, string 
 }
 
 
-void Comando::fDisk(string size, string unit, string path, string partType, string fitType, string del, string addition,string name){
-    FILE *archivo_binario;
-    MBR struc;
-
-    int inicio =0;
-
+int Comando::fDisk(string size, string unit, string path, string partType, string fitType, string del, string addition,string name){
     
-    const char * carar = path.c_str();
-    archivo_binario = fopen(carar, "rb+");
-    fseek(archivo_binario, 0, SEEK_SET);
-    fread(&struc, sizeof(struc), 1, archivo_binario);
-
-    fseek(archivo_binario, 1, SEEK_SET);
-    size_t elements_written = fwrite(&struc, sizeof(MBR), 1, archivo_binario);
-    if (elements_written ==0){
-        cout << "No se pudo escribir :c" << endl;
-    }
-
-    fclose(archivo_binario);
+    Fdisk fdisk;
+    return fdisk.administrarParticion(stoi(size), path, name, unit, partType, fitType, del, addition);
 }
 
 
@@ -191,11 +146,14 @@ void Comando::verX(string x){
 }
 
 void Comando::eliminarX(string dir){
-    FILE *archivo_binario;
-    Ejemplo ejm;
 
-    const char * carar = dir.c_str();
-    remove(carar);
+    Rmdisk rmdisk;
+    rmdisk.eliminarDisco(dir);
+}
+
+void Comando::Mount(string Path, string Name){
+
+    Montar.montarParticion(Path, Name);
 }
 
 int tamao(string tam, string dim){

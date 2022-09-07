@@ -11,6 +11,7 @@
 #include <string.h>
 #include <ctime>
 
+
 using namespace std;
 
 typedef struct{
@@ -33,24 +34,20 @@ typedef struct{
     char direccion[15];
 } Ejemplo;
 
-typedef struct{
-    int mbr_tamano;
-    string FitType;
-    int mbr_dsk_signature;
-} MBR;
-
 class Comando{
     public:
         Parametros param;
+        Mount Montar;
         void identificacionCMD(Parametros p);
         bool crearArchivo(string tam, string dim, string fittype,string dir);
         void escribir(string id, string nombre, string tel, string dir, string x);
+        void Mount(string path, string Name);
         void vertodo();
         void verX(string x);
         void eliminarX(string x);
         void mostrar_struct(Ejemplo ejm);
         void exec(string dir);
-        void fDisk(string size, string unit, string path, string PartType, string fittype, string del, string addition ,string name);
+        int fDisk(string size, string unit, string path, string PartType, string fittype, string del, string addition ,string name);
         void MKdisc();
 
 };
